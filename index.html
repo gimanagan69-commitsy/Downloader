@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Social Media Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .platform-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .platform-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .platform-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .platform-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-info {
+            flex: 1;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .result-download {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .result-download:hover {
+            background: #764ba2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .feature h3 {
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .platform-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 All Social Media Downloader</h1>
+            <p>Download video & foto dari berbagai platform media sosial</p>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>Pilih Platform:</label>
+                <div class="platform-selector">
+                    <button class="platform-btn active" data-platform="instagram">
+                        📷 Instagram
+                    </button>
+                    <button class="platform-btn" data-platform="tiktok">
+                        🎵 TikTok
+                    </button>
+                    <button class="platform-btn" data-platform="youtube">
+                        ▶️ YouTube
+                    </button>
+                    <button class="platform-btn" data-platform="facebook">
+                        👥 Facebook
+                    </button>
+                    <button class="platform-btn" data-platform="twitter">
+                        🐦 Twitter/X
+                    </button>
+                    <button class="platform-btn" data-platform="pinterest">
+                        📌 Pinterest
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="url-input">Masukkan Link URL:</label>
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="url-input" 
+                        placeholder="Contoh: https://www.instagram.com/p/..." 
+                        autocomplete="off"
+                    >
+                </div>
+            </div>
+
+            <button class="download-btn" id="download-btn">
+                📥 Download Sekarang
+            </button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Memproses permintaan Anda...</p>
+            </div>
+
+            <div class="error-message" id="error-message"></div>
+
+            <div class="result-section" id="result-section">
+                <h3 style="margin-bottom: 15px; color: #333;">📁 Hasil Download:</h3>
+                <div id="result-container"></div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Cepat & Mudah</h3>
+                <p>Proses download yang simple dan cepat</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>Multi Platform</h3>
+                <p>Support berbagai media sosial populer</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✨</div>
+                <h3>Kualitas HD</h3>
+                <p>Download dalam kualitas terbaik</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPlatform = 'instagram';
+        const platformBtns = document.querySelectorAll('.platform-btn');
+        const urlInput = document.getElementById('url-input');
+        const downloadBtn = document.getElementById('download-btn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('error-message');
+        const resultSection = document.getElementById('result-section');
+        const resultContainer = document.getElementById('result-container');
+
+        // Platform selection
+        platformBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                platformBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedPlatform = this.dataset.platform;
+                updatePlaceholder();
+                hideError();
+            });
+        });
+
+        function updatePlaceholder() {
+            const placeholders = {
+                instagram: 'https://www.instagram.com/p/...',
+                tiktok: 'https://www.tiktok.com/@username/video/...',
+                youtube: 'https://www.youtube.com/watch?v=...',
+                facebook: 'https://www.facebook.com/watch?v=...',
+                twitter: 'https://twitter.com/username/status/...',
+                pinterest: 'https://www.pinterest.com/pin/...'
+            };
+            urlInput.placeholder = `Contoh: ${placeholders[selectedPlatform]}`;
+        }
+
+        // Download button click
+        downloadBtn.addEventListener('click', function() {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('Silakan masukkan URL terlebih dahulu!');
+                return;
+            }
+
+            if (!isValidUrl(url)) {
+                showError('Format URL tidak valid! Pastikan URL lengkap dengan https://');
+                return;
+            }
+
+            processDownload(url);
+        });
+
+        // Enter key support
+        urlInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                downloadBtn.click();
+            }
+        });
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function processDownload(url) {
+            hideError();
+            resultSection.classList.remove('show');
+            loading.classList.add('show');
+            downloadBtn.disabled = true;
+
+            // Simulasi proses download (dalam implementasi nyata, ini akan memanggil API)
+            setTimeout(() => {
+                loading.classList.remove('show');
+                downloadBtn.disabled = false;
+                
+                // Demo hasil download
+                displayResults(url);
+            }, 2000);
+        }
+
+        function displayResults(url) {
+            const results = generateDemoResults(selectedPlatform, url);
+            
+            resultContainer.innerHTML = '';
+            
+            results.forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <div class="result-info">
+                        <div class="result-title">${result.title}</div>
+                        <div class="result-meta">${result.quality} • ${result.size}</div>
+                    </div>
+                    <button class="result-download" onclick="downloadFile('${result.url}', '${result.filename}')">
+                        Download
+                    </button>
+                `;
+                resultContainer.appendChild(resultItem);
+            });
+
+            resultSection.classList.add('show');
+        }
+
+        function generateDemoResults(platform, url) {
+            const platformNames = {
+                instagram: 'Instagram',
+                tiktok: 'TikTok',
+                youtube: 'YouTube',
+                facebook: 'Facebook',
+                twitter: 'Twitter/X',
+                pinterest: 'Pinterest'
+            };
+
+            return [
+                {
+                    title: `Video ${platformNames[platform]} - HD Quality`,
+                    quality: '1080p HD',
+                    size: '25.4 MB',
+                    url: url,
+                    filename: `${platform}_video_hd.mp4`
+                },
+                {
+                    title: `Video ${platformNames[platform]} - Standard Quality`,
+                    quality: '720p',
+                    size: '12.8 MB',
+                    url: url,
+                    filename: `${platform}_video_sd.mp4`
+                }
+            ];
+        }
+
+        function downloadFile(url, filename) {
+            // Informasi untuk user
+            alert(`DEMO MODE:\n\nDalam versi lengkap, file akan didownload:\n\nFilename: ${filename}\n\nCatatan: Untuk implementasi nyata, diperlukan:\n1. API backend untuk memproses download\n2. Service pihak ketiga seperti yt-dlp atau API downloader\n3. Server untuk menangani request\n\nIni adalah demo interface yang menunjukkan cara kerjanya.`);
+            
+            // Dalam implementasi nyata, kode di bawah ini akan digunakan:
+            /*
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            */
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        // Clear error when typing
+        urlInput.addEventListener('input', hideError);
+    </script>
+</body>
+  </html>
